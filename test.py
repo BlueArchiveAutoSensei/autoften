@@ -34,31 +34,42 @@ class Situation:
         self.namedic = {}
         for name in chara_names:
             self.characters[name] = Character(
-                name, (0, 0, 0, 0), ((0, 0, 0, 0), 0))
+                name, [0, 0, 0, 0], [[0, 0, 0, 0], 0])
             self.namedic[name] = False
 
-    def update(self, results):
+    def update(self, result):
         # 识别对象的数字id的集合
-        cls_num = results[0].boxes.cls.to('cpu').numpy().astype(int)
+        cls_num = result.boxes.cls.numpy().astype(int)
         for i in range(len(cls_num)):
-            cls_name = results[0].names[cls_num[i]]
-            self.characters[cls_name].pos = results[0].boxes.xywh[i]
-            self.characters[cls_name].lastseen = (results[0].boxes.xywh[i], 0)
+            cls_name = result.names[cls_num[i]]
+            self.characters[cls_name].pos = result.boxes.xywh[i]
+            self.characters[cls_name].lastSeen = [result.boxes.xywh[i], 0]
             self.namedic[cls_name] = True
 
         for name in self.namedic:
             if self.namedic[name] == False:
-                self.characters[cls_name].lastseen[0] = self.characters[cls_name].pos
-                self.characters[cls_name].lastseen[1] += 1
-                self.characters[cls_name].pos = (0, 0, 0, 0)
+                self.characters[name].lastSeen[0] = self.characters[name].pos
+                self.characters[name].lastSeen[1] += 1
+                self.characters[name].pos = [0, 0, 0, 0]
+                print("no ", name, ", ")
+            else:
+                self.namedic[name] = False
+                print(name, "at ", self.characters[name].pos, ", ")
+
+        print("---------")
 
 
 tempSitu = Situation(
-    ['ui', 'maidAlice', 'akane', 'newYearKayako', 'yoruNoNero'])
+    ['ui', 'maidAlice', 'akane', 'newYearKayoko', 'yoruNoNero'])
+
+
+def update_for_situ(queue):
+    while True:
+        results = queue.get()
+        tempSitu.update(results)
+
 
 # 从窗口名获得左上角坐标和长宽
-
-
 def get_window_position_and_size(title):
     try:
         window = pyautogui.getWindowsWithTitle(title)[0]
@@ -95,15 +106,17 @@ def screenshot_window_new(pos, queue):
 
 # yolo会在此函数外预先启动，从queue_in得到原始截图，
 # 预测并打上标记后递交给queue_out以备后续显示
-def detect_yolo(model, queue_in, queue_out):
-    sys.stderr = open(os.devnull, 'w')
+def detect_yolo(model, queue_in, queue_act, queue_out):
+    # sys.stderr = open(os.devnull, 'w')
+    # sys.stdout = open(os.devnull, 'w')
     while True:
         screenshot = queue_in.get()
         # predict on an image
-        results = model(screenshot)
+        results = model(screenshot, verbose=False)
         # Visualize the results on the frame
         annotated_frame = results[0].plot()
         queue_out.put(annotated_frame)
+        queue_act.put(results[0].cpu())
 
 
 # 将截图用cv窗口显示出来
@@ -131,6 +144,9 @@ def show_image_cv2(queue, width, height):
 
 if __name__ == "__main__":
 
+    # sys.stderr = open(os.devnull, 'w')
+    # sys.stdout = open(os.devnull, 'w')
+
     title = "Mumu模拟器12"
     model_path = r"C:\Users\Vickko\code\batrain\runs\detect\train34\weights\best.pt"
     # 启动时获取窗口位置，后续不再更新，因此目前不允许移动模拟器位置
@@ -141,25 +157,31 @@ if __name__ == "__main__":
     # 创建两个队列来传递截图
     queue1to2 = multiprocessing.Queue()
     queue2to3 = multiprocessing.Queue()
+    queue_act = multiprocessing.Queue()
     # 创建并启动两个子进程
+    p4 = multiprocessing.Process(
+        target=show_image_cv2, args=(queue2to3, pos[2], pos[3]))
     p1 = multiprocessing.Process(
         target=screenshot_window, args=(pos, queue1to2))
     p2 = multiprocessing.Process(
-        target=detect_yolo, args=(model, queue1to2, queue2to3))
+        target=detect_yolo, args=(model, queue1to2, queue_act, queue2to3))
     p3 = multiprocessing.Process(
-        target=show_image_cv2, args=(queue2to3, pos[2], pos[3]))
+        target=update_for_situ, args=(queue_act,))
     p1.start()
     p2.start()
     p3.start()
+    p4.start()
 
     while True:
-        if not p3.is_alive():
-            # 如果 p3 已停止，终止 p1p2
+        if not p4.is_alive():
+            # 如果 p4 已停止，终止 p1p2
             p1.terminate()
             p2.terminate()
+            p3.terminate()
             break
 
     # 等待所有子进程结束
     p1.join()
     p2.join()
     p3.join()
+    p4.join()

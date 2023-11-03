@@ -1,8 +1,5 @@
-import pyautogui
 import cv2
-import numpy as np
-import mss
-from windowCapture import pos_window_win32, screenshot_window_win32
+from windowCapture import screenshot_window_win32
 import time
 from config import Config, init
 from processManager import ProcessManager
@@ -69,43 +66,9 @@ def update_for_situ(pipe_conn):
         tempSitu.update(results)
 
 
-# 从窗口名获得左上角坐标和长宽
-def get_window_position_and_size(title):
-    try:
-        window = pyautogui.getWindowsWithTitle(title)[0]
-        return window.left, window.top, window.width, window.height
-    except IndexError:
-        print(f"No window with title '{title}' found.")
-        return None
-
-
-# 截图指定窗口（左上坐标和长宽）
-def screenshot_window(pos, queue):
-    while True:
-        if pos:
-            left, top, width, height = pos
-            screenshot = pyautogui.screenshot(
-                region=(left, top, width, height))
-            # Convert the screenshot to a NumPy array
-            frame_bgr = np.array(screenshot)
-            queue.put(frame_bgr)
-        else:
-            print("No screenshots taken as the window was not found.")
-
-
-# 使用mss截图的代码，目前好像输出格式不对，yolo会报错不能用
-def screenshot_window_mss(pos, queue):
-    with mss.mss() as sct:
-        left, top, width, height = pos
-        monitor = {"top": top, "left": left, "width": width, "height": height}
-        screenshot = sct.grab(monitor)
-        # Convert the screenshot to a NumPy array
-        frame_bgr = np.array(screenshot)
-        queue.put(frame_bgr)
-
-
-# yolo会在此函数外预先启动，从queue_in得到原始截图，
-# 预测并打上标记后递交给queue_out以备后续显示
+# yolo会在此函数外预先启动，从pipe_conn_in得到原始截图，
+# 预测并打上标记后递交给pipe_conn_out以备后续显示
+# 此外，预测结果会从pipe_conn_act送给后续处理
 # 当前状态下，裸yolo性能大约50fps
 def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
     # sys.stderr = open(os.devnull, 'w')
@@ -120,7 +83,6 @@ def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
             pass
         while pipe_conn_in.poll():
             screenshot = pipe_conn_in.recv()
-        # screenshot = queue_in.get()
         # predict on an image
         results = model(screenshot, stream=True, verbose=False)
         # results = model(r"C:\Users\Vickko\Documents\MuMu共享文件夹\VideoRecords\ブルアカ(17).mp4",stream=True,verbose=False)
@@ -145,14 +107,13 @@ def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
 # 4. opencv -> pygame/pyqt
 # 5. 线程
 def show_image_cv2(pipe_conn, width, height):
-    
+
     screenshot = None
     while True:
         while not pipe_conn.poll():
             pass
         while pipe_conn.poll():
             screenshot = pipe_conn.recv()
-        # screenshot = queue.get()
         if screenshot is None:
             break  # 结束进程
         # # Convert RGB to BGR (OpenCV uses BGR by default, but pyautogui.screenshot returns RGB)
@@ -174,11 +135,7 @@ if __name__ == "__main__":
     init(config)
 
     pm = ProcessManager()
-    # 创建两个队列来传递截图
-    pm.appendQueue("queue1to2")
-    pm.appendQueue("queue2to3")
-    pm.appendQueue("queue_act")
-
+    # 创建管道来传递截图
     pm.appendPipe("pipe1to2")
     pm.appendPipe("pipe2to3")
     pm.appendPipe("pipe_act")
@@ -194,15 +151,9 @@ if __name__ == "__main__":
     pm.appendProcess(show_image_cv2,
                      (pm.pipeMap['pipe2to3'][1], *config.size))
 
-    pm.startBySequence([
-        'screenshot_window_win32',
-        'detect_yolo',
-        'show_image_cv2',
-        'update_for_situ'
-    ])
-    # pm.startBySequence(['show_image_cv2',
-    #                     'screenshot_window_win32',
-    #                     'detect_yolo',
-    #                     'update_for_situ'])
+    pm.startBySequence(['show_image_cv2',
+                        'screenshot_window_win32',
+                        'detect_yolo',
+                        'update_for_situ'])
 
     pm.terminateProcesses(keyProcessName='show_image_cv2')

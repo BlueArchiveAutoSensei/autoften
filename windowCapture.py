@@ -1,7 +1,6 @@
 import win32gui
 import win32ui
 import win32con
-from PIL import Image
 import ctypes
 import numpy as np
 import time as time

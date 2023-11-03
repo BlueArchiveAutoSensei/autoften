@@ -41,8 +41,8 @@ def pos_window_win32(title):
 
 # 截图指定窗口（左上右下坐标）
 
-
-def screenshot_window_win32(hwnd, pos, size, queue):
+# 当前状态下，裸截图性能大约100fps
+def screenshot_window_win32(hwnd, pos, size, pipe_conn):
     # 获取窗口的DC
     hwndDC = win32gui.GetWindowDC(hwnd)
     mfcDC = win32ui.CreateDCFromHandle(hwndDC)
@@ -71,9 +71,6 @@ def screenshot_window_win32(hwnd, pos, size, queue):
         width = bmpinfo['bmWidth']
         bgrx_arr = np.frombuffer(bmpstr, dtype=np.uint8).reshape((height, width, 4))  # 4 for BGRX channels
         bgr_arr = bgrx_arr[:, :, :3]
-        
-        # 释放位图资源
-        win32gui.DeleteObject(saveBitMap.GetHandle())
 
         # 转为PIL Image
         # img = Image.frombuffer(
@@ -81,8 +78,12 @@ def screenshot_window_win32(hwnd, pos, size, queue):
         #     (bmpinfo['bmWidth'], bmpinfo['bmHeight']),
         #     bmpstr, 'raw', 'BGRX', 0, 1
         # )
-        
-        queue.put(bgr_arr)
+
+        pipe_conn.send(bgr_arr)
+
+        # 释放位图资源
+        win32gui.DeleteObject(saveBitMap.GetHandle())
+
         end_time = time.time()
         if end_time - start_time==0:
             frame_rate = 114514

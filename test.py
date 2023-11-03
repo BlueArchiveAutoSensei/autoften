@@ -63,9 +63,9 @@ tempSitu = Situation(
     ['ui', 'maidAlice', 'akane', 'newYearKayoko', 'yoruNoNero'])
 
 
-def update_for_situ(queue):
+def update_for_situ(pipe_conn):
     while True:
-        results = queue.get()
+        results = pipe_conn.recv()
         tempSitu.update(results)
 
 
@@ -106,20 +106,21 @@ def screenshot_window_mss(pos, queue):
 
 # yolo会在此函数外预先启动，从queue_in得到原始截图，
 # 预测并打上标记后递交给queue_out以备后续显示
-def detect_yolo(model, queue_in, queue_act, queue_out):
+# 当前状态下，裸yolo性能大约50fps
+def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
     # sys.stderr = open(os.devnull, 'w')
     # sys.stdout = open(os.devnull, 'w')
 
     screenshot = None
     start_time = None
     while True:
-        while queue_in.empty():
-            pass
         if start_time == None:
             start_time = time.time()
-        # while not queue_in.empty():
-        #     screenshot = queue_in.get()
-        screenshot = queue_in.get()
+        while not pipe_conn_in.poll():
+            pass
+        while pipe_conn_in.poll():
+            screenshot = pipe_conn_in.recv()
+        # screenshot = queue_in.get()
         # predict on an image
         results = model(screenshot, stream=True, verbose=False)
         # results = model(r"C:\Users\Vickko\Documents\MuMu共享文件夹\VideoRecords\ブルアカ(17).mp4",stream=True,verbose=False)
@@ -129,8 +130,8 @@ def detect_yolo(model, queue_in, queue_act, queue_out):
             result = r
         # Visualize the results on the frame
         annotated_frame = result.plot()
-        queue_out.put(annotated_frame)
-        queue_act.put(result.cpu())
+        pipe_conn_out.send(annotated_frame)
+        pipe_conn_act.send(result.cpu())
         frame_rate = 1/(time.time()-start_time)
         start_time = time.time()
         print("detection speed: ", frame_rate, "fps")
@@ -143,15 +144,15 @@ def detect_yolo(model, queue_in, queue_act, queue_out):
 # 3. 使用共享内存(multiprocessing 的 shared_memory)
 # 4. opencv -> pygame/pyqt
 # 5. 线程
-def show_image_cv2(queue, width, height):
-    screenshot = None
+def show_image_cv2(pipe_conn, width, height):
     
+    screenshot = None
     while True:
-        while queue.empty():
+        while not pipe_conn.poll():
             pass
-        while not queue.empty():
-            screenshot = queue.get()
-        #screenshot = queue.get()
+        while pipe_conn.poll():
+            screenshot = pipe_conn.recv()
+        # screenshot = queue.get()
         if screenshot is None:
             break  # 结束进程
         # # Convert RGB to BGR (OpenCV uses BGR by default, but pyautogui.screenshot returns RGB)
@@ -177,23 +178,31 @@ if __name__ == "__main__":
     pm.appendQueue("queue1to2")
     pm.appendQueue("queue2to3")
     pm.appendQueue("queue_act")
+
+    pm.appendPipe("pipe1to2")
+    pm.appendPipe("pipe2to3")
+    pm.appendPipe("pipe_act")
+
     # 创建并启动两个子进程
     pm.appendProcess(screenshot_window_win32,
-                     (config.hwnd, config.pos, config.size, pm.queueMap['queue1to2']))
+                     (config.hwnd, config.pos, config.size, pm.pipeMap['pipe1to2'][0]))
     pm.appendProcess(detect_yolo,
                      (config.model,
-                      pm.queueMap['queue1to2'], pm.queueMap['queue_act'], pm.queueMap['queue2to3']))
+                      pm.pipeMap['pipe1to2'][1], pm.pipeMap['pipe_act'][0], pm.pipeMap['pipe2to3'][0]))
     pm.appendProcess(update_for_situ,
-                     (pm.queueMap['queue_act'],))
+                     (pm.pipeMap['pipe_act'][1],))
     pm.appendProcess(show_image_cv2,
-                     (pm.queueMap['queue2to3'], *config.size))
+                     (pm.pipeMap['pipe2to3'][1], *config.size))
 
-    # pm.startBySequence(['screenshot_window_win32',
+    pm.startBySequence([
+        'screenshot_window_win32',
+        'detect_yolo',
+        'show_image_cv2',
+        'update_for_situ'
+    ])
+    # pm.startBySequence(['show_image_cv2',
+    #                     'screenshot_window_win32',
     #                     'detect_yolo',
-    #                     ])
-    pm.startBySequence(['show_image_cv2',
-                        'screenshot_window_win32',
-                        'detect_yolo',
-                        'update_for_situ'])
+    #                     'update_for_situ'])
 
     pm.terminateProcesses(keyProcessName='show_image_cv2')

@@ -1,6 +1,5 @@
 import win32gui
 import win32ui
-import win32con
 import ctypes
 import numpy as np
 import time as time
@@ -21,7 +20,8 @@ def pos_window_win32(title):
     hwnd = win32gui.FindWindow(None, title)
     if hwnd:
         # 获取窗口的坐标
-        left, top, right, bot = win32gui.GetWindowRect(hwnd)
+        #left, top, right, bot = win32gui.GetWindowRect(hwnd)
+        left, top, right, bot = win32gui.GetClientRect(hwnd)
 
         # 获取窗口的DPI缩放
         scaling_factor = get_window_dpi_scale(hwnd)
@@ -68,9 +68,11 @@ def screenshot_window_win32(hwnd, pos, size, pipe_conn):
         saveBitMap.CreateCompatibleBitmap(mfcDC, w, h)
         saveDC.SelectObject(saveBitMap)
 
-        # 截图
-        saveDC.StretchBlt((0, 0), (w, h), mfcDC, (0, 0),
-                          (w, h), win32con.SRCCOPY)
+        # StretchBlt可能导致一些窗口黑屏
+        # # 截图
+        # saveDC.StretchBlt((0, 0), (w, h), mfcDC, (0, 0),
+        #                   (w, h), win32con.SRCCOPY)
+        ctypes.windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 3)
 
         bmpinfo = saveBitMap.GetInfo()
         bmpstr = saveBitMap.GetBitmapBits(True)
@@ -78,7 +80,8 @@ def screenshot_window_win32(hwnd, pos, size, pipe_conn):
         width = bmpinfo['bmWidth']
         bgrx_arr = np.frombuffer(bmpstr, dtype=np.uint8).reshape(
             (height, width, 4))  # 4 for BGRX channels
-        bgr_arr = bgrx_arr[:, :, :3]
+        # bgr_arr = bgrx_arr[:, :, :3]
+        bgr_arr = np.ascontiguousarray(bgrx_arr)[..., :-1]  # make image C_CONTIGUOUS and drop alpha channel
 
         # 转为PIL Image
         # img = Image.frombuffer(

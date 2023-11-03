@@ -1,11 +1,11 @@
 import pyautogui
 import cv2
 import numpy as np
-import multiprocessing
-from ultralytics import YOLO
 import mss
-import os
-import sys
+from windowCapture import pos_window_win32, screenshot_window_win32
+import time
+from config import Config, init
+from processManager import ProcessManager
 
 # class Stu:
 
@@ -94,7 +94,7 @@ def screenshot_window(pos, queue):
 
 
 # 使用mss截图的代码，目前好像输出格式不对，yolo会报错不能用
-def screenshot_window_new(pos, queue):
+def screenshot_window_mss(pos, queue):
     with mss.mss() as sct:
         left, top, width, height = pos
         monitor = {"top": top, "left": left, "width": width, "height": height}
@@ -109,14 +109,31 @@ def screenshot_window_new(pos, queue):
 def detect_yolo(model, queue_in, queue_act, queue_out):
     # sys.stderr = open(os.devnull, 'w')
     # sys.stdout = open(os.devnull, 'w')
+
+    screenshot = None
+    start_time = None
     while True:
+        while queue_in.empty():
+            pass
+        if start_time == None:
+            start_time = time.time()
+        # while not queue_in.empty():
+        #     screenshot = queue_in.get()
         screenshot = queue_in.get()
         # predict on an image
-        results = model(screenshot, verbose=False)
+        results = model(screenshot, stream=True, verbose=False)
+        # results = model(r"C:\Users\Vickko\Documents\MuMu共享文件夹\VideoRecords\ブルアカ(17).mp4",stream=True,verbose=False)
+
+        result = None
+        for r in results:
+            result = r
         # Visualize the results on the frame
-        annotated_frame = results[0].plot()
+        annotated_frame = result.plot()
         queue_out.put(annotated_frame)
-        queue_act.put(results[0].cpu())
+        queue_act.put(result.cpu())
+        frame_rate = 1/(time.time()-start_time)
+        start_time = time.time()
+        print("detection speed: ", frame_rate, "fps")
 
 
 # 将截图用cv窗口显示出来
@@ -127,14 +144,20 @@ def detect_yolo(model, queue_in, queue_act, queue_out):
 # 4. opencv -> pygame/pyqt
 # 5. 线程
 def show_image_cv2(queue, width, height):
+    screenshot = None
+    
     while True:
-        screenshot = queue.get()
+        while queue.empty():
+            pass
+        while not queue.empty():
+            screenshot = queue.get()
+        #screenshot = queue.get()
         if screenshot is None:
             break  # 结束进程
-        # Convert RGB to BGR (OpenCV uses BGR by default, but pyautogui.screenshot returns RGB)
-        frame_rgb = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
+        # # Convert RGB to BGR (OpenCV uses BGR by default, but pyautogui.screenshot returns RGB)
+        # frame_rgb = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
         # Resize the image to 1/2 of its original dimensions
-        resized_frame = cv2.resize(frame_rgb, (width // 2, height // 2))
+        resized_frame = cv2.resize(screenshot, (width // 2, height // 2))
         # Display the image using OpenCV
         cv2.imshow('BAAS', resized_frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -143,45 +166,34 @@ def show_image_cv2(queue, width, height):
 
 
 if __name__ == "__main__":
-
     # sys.stderr = open(os.devnull, 'w')
     # sys.stdout = open(os.devnull, 'w')
 
-    title = "Mumu模拟器12"
-    model_path = r"C:\Users\Vickko\code\batrain\runs\detect\train34\weights\best.pt"
-    # 启动时获取窗口位置，后续不再更新，因此目前不允许移动模拟器位置
-    pos = get_window_position_and_size(title)
-    # Load a model
-    model = YOLO(model_path)
+    config = Config()
+    init(config)
 
+    pm = ProcessManager()
     # 创建两个队列来传递截图
-    queue1to2 = multiprocessing.Queue()
-    queue2to3 = multiprocessing.Queue()
-    queue_act = multiprocessing.Queue()
+    pm.appendQueue("queue1to2")
+    pm.appendQueue("queue2to3")
+    pm.appendQueue("queue_act")
     # 创建并启动两个子进程
-    p4 = multiprocessing.Process(
-        target=show_image_cv2, args=(queue2to3, pos[2], pos[3]))
-    p1 = multiprocessing.Process(
-        target=screenshot_window, args=(pos, queue1to2))
-    p2 = multiprocessing.Process(
-        target=detect_yolo, args=(model, queue1to2, queue_act, queue2to3))
-    p3 = multiprocessing.Process(
-        target=update_for_situ, args=(queue_act,))
-    p1.start()
-    p2.start()
-    p3.start()
-    p4.start()
+    pm.appendProcess(screenshot_window_win32,
+                     (config.hwnd, config.pos, config.size, pm.queueMap['queue1to2']))
+    pm.appendProcess(detect_yolo,
+                     (config.model,
+                      pm.queueMap['queue1to2'], pm.queueMap['queue_act'], pm.queueMap['queue2to3']))
+    pm.appendProcess(update_for_situ,
+                     (pm.queueMap['queue_act'],))
+    pm.appendProcess(show_image_cv2,
+                     (pm.queueMap['queue2to3'], *config.size))
 
-    while True:
-        if not p4.is_alive():
-            # 如果 p4 已停止，终止 p1p2
-            p1.terminate()
-            p2.terminate()
-            p3.terminate()
-            break
+    # pm.startBySequence(['screenshot_window_win32',
+    #                     'detect_yolo',
+    #                     ])
+    pm.startBySequence(['show_image_cv2',
+                        'screenshot_window_win32',
+                        'detect_yolo',
+                        'update_for_situ'])
 
-    # 等待所有子进程结束
-    p1.join()
-    p2.join()
-    p3.join()
-    p4.join()
+    pm.terminateProcesses(keyProcessName='show_image_cv2')

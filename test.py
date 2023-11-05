@@ -1,6 +1,6 @@
 import cv2
 from windowCapture import screenshot_window_win32
-import time
+from YOLODetection import detect_yolo
 from config import Config, init
 from processManager import ProcessManager
 
@@ -66,39 +66,6 @@ def update_for_situ(pipe_conn):
         tempSitu.update(results)
 
 
-# yolo会在此函数外预先启动，从pipe_conn_in得到原始截图，
-# 预测并打上标记后递交给pipe_conn_out以备后续显示
-# 此外，预测结果会从pipe_conn_act送给后续处理
-# 当前状态下，裸yolo性能大约50fps
-def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
-    # sys.stderr = open(os.devnull, 'w')
-    # sys.stdout = open(os.devnull, 'w')
-
-    screenshot = None
-    start_time = None
-    while True:
-        if start_time == None:
-            start_time = time.time()
-        while not pipe_conn_in.poll():
-            pass
-        while pipe_conn_in.poll():
-            screenshot = pipe_conn_in.recv()
-        # predict on an image
-        results = model(screenshot, stream=True, verbose=False)
-        # results = model(r"C:\Users\Vickko\Documents\MuMu共享文件夹\VideoRecords\ブルアカ(17).mp4",stream=True,verbose=False)
-
-        result = None
-        for r in results:
-            result = r
-        # Visualize the results on the frame
-        annotated_frame = result.plot()
-        pipe_conn_out.send(annotated_frame)
-        pipe_conn_act.send(result.cpu())
-        frame_rate = 1/(time.time()-start_time)
-        start_time = time.time()
-        print("detection speed: ", frame_rate, "fps")
-
-
 # 将截图用cv窗口显示出来
 # TODO: 大约100ms延迟，考虑使用：
 # 1. 硬件加速
@@ -151,9 +118,13 @@ if __name__ == "__main__":
     pm.appendProcess(show_image_cv2,
                      (pm.pipeMap['pipe2to3'][1], *config.size))
 
-    pm.startBySequence(['show_image_cv2',
-                        'screenshot_window_win32',
-                        'detect_yolo',
-                        'update_for_situ'])
+    pm.startBySequence(['screenshot_window_win32', 'detect_yolo',
+
+                        ])
+
+    # pm.startBySequence(['show_image_cv2',
+    #                     'screenshot_window_win32',
+    #                     'detect_yolo',
+    #                     'update_for_situ'])
 
     pm.terminateProcesses(keyProcessName='show_image_cv2')

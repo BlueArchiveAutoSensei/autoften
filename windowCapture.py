@@ -3,6 +3,9 @@ import win32ui
 import ctypes
 import numpy as np
 import time as time
+import threading
+import copy
+import cv2
 
 
 # 获取Windows当前屏幕缩放等级
@@ -20,7 +23,7 @@ def pos_window_win32(title):
     hwnd = win32gui.FindWindow(None, title)
     if hwnd:
         # 获取窗口的坐标
-        #left, top, right, bot = win32gui.GetWindowRect(hwnd)
+        # left, top, right, bot = win32gui.GetWindowRect(hwnd)
         left, top, right, bot = win32gui.GetClientRect(hwnd)
 
         # 获取窗口的DPI缩放
@@ -48,8 +51,46 @@ def pos_window_win32(title):
 
 
 # 截图指定窗口（左上右下坐标）
-# 当前状态下，裸截图性能大约100fps
+# 当前状态下，1440p全屏裸截图性能大约30-45fps
+# 根据cProfile+snakeviz,
+# windll PrintWindow大约占此函数80%耗时
+# saveBitMap.GetBitmapBits占14%
+# saveDC.SelectObject占3%
+# 可继续使用线程分摊函数主线压力以优化性能
 def screenshot_window_win32(hwnd, pos, size, pipe_conn):
+
+    # ---------------- #
+
+    # 初始化共享数据和锁
+    shared_data = {
+        "bgr_arr": None,
+        "data_ready": False,
+    }
+    data_lock = threading.Lock()
+
+    # 检测data_ready标志位，
+    # 当rdy=True时加锁，把共享区域的信息拷贝至data准备发送
+    # 拷贝完成即开锁，共享区域立刻可以更新为新数据
+    # data负责发送刚刚拷贝完成的信息
+    def send_data_thread():
+        while True:
+            # data = None
+            if shared_data["data_ready"]:
+                with data_lock:
+                    data = copy.deepcopy(shared_data["bgr_arr"])
+
+                    shared_data["data_ready"] = False
+                pipe_conn.send(data)
+                # cv2.imshow("1", data)
+                # cv2.waitKey(0)
+                # cv2.destroyAllWindows()
+
+    # 创建发送线程
+    thread = threading.Thread(target=send_data_thread)
+    thread.start()
+
+    # ---------------- #
+
     # 获取窗口的DC
     hwndDC = win32gui.GetWindowDC(hwnd)
     mfcDC = win32ui.CreateDCFromHandle(hwndDC)
@@ -81,7 +122,8 @@ def screenshot_window_win32(hwnd, pos, size, pipe_conn):
         bgrx_arr = np.frombuffer(bmpstr, dtype=np.uint8).reshape(
             (height, width, 4))  # 4 for BGRX channels
         # bgr_arr = bgrx_arr[:, :, :3]
-        bgr_arr = np.ascontiguousarray(bgrx_arr)[..., :-1]  # make image C_CONTIGUOUS and drop alpha channel
+        # make image C_CONTIGUOUS and drop alpha channel
+        bgr_arr = np.ascontiguousarray(bgrx_arr)[..., :-1]
 
         # 转为PIL Image
         # img = Image.frombuffer(
@@ -90,7 +132,12 @@ def screenshot_window_win32(hwnd, pos, size, pipe_conn):
         #     bmpstr, 'raw', 'BGRX', 0, 1
         # )
 
-        pipe_conn.send(bgr_arr)
+        # pipe_conn.send(bgr_arr)
+
+        with data_lock:
+            # 更新共享数据
+            shared_data["bgr_arr"] = bgr_arr
+            shared_data["data_ready"] = True
 
         # 释放位图资源
         win32gui.DeleteObject(saveBitMap.GetHandle())

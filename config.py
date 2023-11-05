@@ -6,6 +6,7 @@ class Config:
     def __init__(self) -> None:
         self.windowTitle = "Mumu模拟器12"
         # self.windowTitle = "任务管理器"
+        # self.windowTitle = "Image34.png ‎- 照片"
         # self.windowTitle = "ブルアカ(17).mp4 - VLC Media Player"
         self.yoloModelPath = r"C:\Users\Vickko\code\batrain\runs\detect\train32\weights\best.pt"
         self.model = None

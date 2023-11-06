@@ -148,9 +148,9 @@ if __name__ == "__main__":
 
 
 ###############################################################
-#                         screenshot_window_win32
-#                         ↓                       ↘
-#               detect_yolo                 ex_positioning
-#               ↓         ↘             ↙
-#  show_image_cv2          update_for_situ
+#                         screenshot_window_win32             #
+#                         ↓                       ↘          #
+#               detect_yolo                 ui_positioning    #
+#               ↓         ↘             ↙                   #
+#  show_image_cv2          update_for_situ                    #
 ###############################################################

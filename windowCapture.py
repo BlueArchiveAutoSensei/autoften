@@ -57,7 +57,7 @@ def pos_window_win32(title):
 # saveBitMap.GetBitmapBits占14%
 # saveDC.SelectObject占3%
 # 可继续使用线程分摊函数主线压力以优化性能
-def screenshot_window_win32(hwnd, pos, size, pipe_conn):
+def screenshot_window_win32(hwnd, pos, size, pipe_conn1, pipe_conn2):
 
     # ---------------- #
 
@@ -77,10 +77,11 @@ def screenshot_window_win32(hwnd, pos, size, pipe_conn):
             # data = None
             if shared_data["data_ready"]:
                 with data_lock:
-                    data = copy.deepcopy(shared_data["bgr_arr"])
+                    data = shared_data["bgr_arr"].copy()
 
                     shared_data["data_ready"] = False
-                pipe_conn.send(data)
+                pipe_conn1.send(data)
+                pipe_conn2.send(data)
                 # cv2.imshow("1", data)
                 # cv2.waitKey(0)
                 # cv2.destroyAllWindows()
@@ -148,7 +149,7 @@ def screenshot_window_win32(hwnd, pos, size, pipe_conn):
         else:
             frame_rate = 1/(end_time-start_time)
         start_time = time.time()
-        print("capture speed: ", frame_rate, "fps")
+        # print("capture speed: ", frame_rate, "fps")
 
     # 释放设备上下文资源
     saveDC.DeleteDC()

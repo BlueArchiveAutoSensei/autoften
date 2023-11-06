@@ -9,6 +9,16 @@ class Config:
         # self.windowTitle = "Image34.png ‎- 照片"
         # self.windowTitle = "ブルアカ(17).mp4 - VLC Media Player"
         self.yoloModelPath = r"C:\Users\Vickko\code\batrain\runs\detect\train32\weights\best.pt"
+        self.ex_template_path = r"C:\Users\Vickko\Pictures\workspace"
+        self.ex_point_template_path = r"C:\Users\Vickko\Pictures\line.png"
+        self.ex_slot_pos = (1660, 1020, 2280, 1250) # 原始视频截图的坐标
+        self.ex_slot_pos = (1660, 1110, 2310, 1340) # win32带Mumu标题栏
+        self.ex_slot_pos = (1640, 1110, 2300, 1340) # 照片app全屏截图
+        self.ex_bar_pos = (1640, 1250, 2285, 1316)  # 原始视频截图的坐标
+        self.ex_bar_pos = (1640, 1342, 2285, 1385)  # win32带Mumu标题栏
+        self.ex_bar_pos = (1648, 1345, 2298, 1400)  # 照片app全屏截图
+        self.ex_bar_pos = (1640, 1350, 2285, 1400)  # 照片app全屏win32
+        self.tempMatch_threshold = 0.6
         self.model = None
         self.hwnd = None
         self.pos = None

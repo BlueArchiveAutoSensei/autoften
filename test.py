@@ -3,6 +3,7 @@ from windowCapture import screenshot_window_win32
 from YOLODetection import detect_yolo
 from config import Config, init
 from processManager import ProcessManager
+from UIPositioning import ui_positioning_pipe
 
 # class Stu:
 
@@ -33,8 +34,10 @@ class Situation:
             self.characters[name] = Character(
                 name, [0, 0, 0, 0], [[0, 0, 0, 0], 0])
             self.namedic[name] = False
+        self.exSlot = {}
+        self.exPoint = {}
 
-    def update(self, result):
+    def updateCharacter(self, result):
         # 识别对象的数字id的集合
         cls_num = result.boxes.cls.numpy().astype(int)
         for i in range(len(cls_num)):
@@ -55,15 +58,22 @@ class Situation:
 
         print("---------")
 
+    def updateEX(self, result):
+        self.exSlot = result[0]
+        self.exPoint = result[1]
+
 
 tempSitu = Situation(
     ['ui', 'maidAlice', 'akane', 'newYearKayoko', 'yoruNoNero'])
 
 
-def update_for_situ(pipe_conn):
+def update_for_situ(pipe_conn_1,pipe_conn_2):
     while True:
-        results = pipe_conn.recv()
-        tempSitu.update(results)
+        results = pipe_conn_1.recv()
+        tempSitu.updateCharacter(results)
+        ex_slot = pipe_conn_2.recv()
+        tempSitu.updateEX(ex_slot)
+        # ex = ex_positioning()
 
 
 # 将截图用cv窗口显示出来
@@ -105,26 +115,42 @@ if __name__ == "__main__":
     # 创建管道来传递截图
     pm.appendPipe("pipe1to2")
     pm.appendPipe("pipe2to3")
+    pm.appendPipe("pipe1to4")
+    pm.appendPipe("pipe4toact")
     pm.appendPipe("pipe_act")
 
     # 创建并启动两个子进程
     pm.appendProcess(screenshot_window_win32,
-                     (config.hwnd, config.pos, config.size, pm.pipeMap['pipe1to2'][0]))
+                     (config.hwnd, config.pos, config.size,
+                      pm.pipeMap['pipe1to2'][0], pm.pipeMap['pipe1to4'][0]))
+    pm.appendProcess(ui_positioning_pipe,
+                     (pm.pipeMap['pipe1to4'][1], pm.pipeMap['pipe4toact'][0],
+                      config.ex_template_path, config.ex_point_template_path,
+                      config.ex_slot_pos, config.ex_bar_pos,
+                      config.tempMatch_threshold))
     pm.appendProcess(detect_yolo,
                      (config.model,
                       pm.pipeMap['pipe1to2'][1], pm.pipeMap['pipe_act'][0], pm.pipeMap['pipe2to3'][0]))
     pm.appendProcess(update_for_situ,
-                     (pm.pipeMap['pipe_act'][1],))
+                     (pm.pipeMap['pipe_act'][1], pm.pipeMap['pipe4toact'][1]))
     pm.appendProcess(show_image_cv2,
                      (pm.pipeMap['pipe2to3'][1], *config.size))
 
-    pm.startBySequence(['screenshot_window_win32', 'detect_yolo',
+    startSequence = ['show_image_cv2',
+                     'screenshot_window_win32',
+                     'ui_positioning_pipe',
+                     'detect_yolo',
+                     'update_for_situ']
 
-                        ])
-
-    # pm.startBySequence(['show_image_cv2',
-    #                     'screenshot_window_win32',
-    #                     'detect_yolo',
-    #                     'update_for_situ'])
+    pm.startBySequence(startSequence)
 
     pm.terminateProcesses(keyProcessName='show_image_cv2')
+
+
+###############################################################
+#                         screenshot_window_win32
+#                         ↓                       ↘
+#               detect_yolo                 ex_positioning
+#               ↓         ↘             ↙
+#  show_image_cv2          update_for_situ
+###############################################################

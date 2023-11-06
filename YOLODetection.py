@@ -36,7 +36,7 @@ def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
                 #print("false")
                 with data_lock:
                     #print("child get lock")
-                    shared_data["screenshot"] = copy.deepcopy(data)
+                    shared_data["screenshot"] = data.copy()
                     #time.sleep(0.02)
                     shared_data["data_ready"] = True
                     #print("child set true")
@@ -90,8 +90,8 @@ def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
             result = r
         # Visualize the results on the fqqrame
         annotated_frame = result.plot()
-        #pipe_conn_out.send(annotated_frame)
-        # pipe_conn_act.send(result.cpu())
+        pipe_conn_out.send(annotated_frame)
+        pipe_conn_act.send(result.cpu())
         frame_rate = 1/(time.time()-start_time)
         start_time = time.time()
-        print("detection speed: ", frame_rate, "fps")
+        # print("detection speed: ", frame_rate, "fps")

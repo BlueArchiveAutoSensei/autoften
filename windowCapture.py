@@ -46,7 +46,7 @@ def pos_window_win32(title):
         #     top * scaling_factor), int(right * scaling_factor), int(bot * scaling_factor)
 
         print("window position:", (left, top, right, bot), (w, h), scaling_factor)
-        return hwnd, (left, top, right, bot), (w, h)
+        return hwnd, (left, top, right, bot), (w, h), scaling_factor
     return None
 
 

@@ -8,8 +8,6 @@ from ultralytics import YOLO
 # 预测并打上标记后递交给pipe_conn_out以备后续显示
 # 此外，预测结果会从pipe_conn_act送给后续处理
 # 当前状态下，裸yolo性能大约50fps
-
-
 def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
     # model = YOLO(
     # r"C:\Users\Vickko\code\batrain\runs\detect\train32\weights\best.pt")
@@ -23,12 +21,12 @@ def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
         "screenshot": None,
         "data_ready": False,
     }
-    data = None
     data_lock = threading.Lock()
 
     def read_data_thread():
         # video_path = r"C:\Users\Vickko\Documents\MuMu共享文件夹\VideoRecords\ブルアカ(17).mp4"
         # cap = cv2.VideoCapture(video_path)
+        data = None
         while True:
             # time.sleep(0.005)
             # print("while")
@@ -94,8 +92,8 @@ def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
                 result = r
             # Visualize the results on the frame
             annotated_frame = result.plot()
-            # pipe_conn_out.send(annotated_frame)
-            # pipe_conn_act.send(result.cpu())
+            pipe_conn_out.send(annotated_frame)
+            pipe_conn_act.send(result.cpu())
 
             # cv2.imshow("1", annotated_frame)
             # if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -104,4 +102,4 @@ def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
 
             frame_rate = 1/(time.time()-start_time)
             start_time = time.time()
-            print("detection speed: ", frame_rate, "fps")
+            # print("detection speed: ", frame_rate, "fps")

@@ -74,17 +74,19 @@ def screenshot_window_win32(hwnd, pos, size, pipe_conn1, pipe_conn2):
     # data负责发送刚刚拷贝完成的信息
     def send_data_thread():
         while True:
-            # data = None
+            data = None
             if shared_data["data_ready"]:
                 with data_lock:
-                    data = shared_data["bgr_arr"].copy()
-
+                    data = shared_data["bgr_arr"]
                     shared_data["data_ready"] = False
+            if data is not None:        
                 pipe_conn1.send(data)
-                pipe_conn2.send(data)
-                # cv2.imshow("1", data)
-                # cv2.waitKey(0)
-                # cv2.destroyAllWindows()
+                # pipe_conn2.send(data)
+        #         cv2.imshow("1", data)
+        #         if cv2.waitKey(1) & 0xFF == ord("q"):
+        #             break
+        # cv2.destroyAllWindows()
+
 
     # 创建发送线程
     thread = threading.Thread(target=send_data_thread)

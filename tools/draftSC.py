@@ -69,9 +69,9 @@ def screenshot_window_win32(hwnd, pos, size, save_dir):
 
 if __name__ == '__main__':
     # 预定义的窗口名称和保存目录
-    window_name = "MuMu模拟器12"
     window_name = "Image34.png ‎- 照片"
     window_name = "QQ"
+    window_name = "MuMu模拟器12"
     save_dir = r"C:\Users\Vickko\Pictures"
     os.makedirs(save_dir, exist_ok=True)
     

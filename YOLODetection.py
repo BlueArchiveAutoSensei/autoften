@@ -92,7 +92,7 @@ def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
                 result = r
             # Visualize the results on the frame
             annotated_frame = result.plot()
-            pipe_conn_out.send(annotated_frame)
+            # pipe_conn_out.send(annotated_frame)
             pipe_conn_act.send(result.cpu())
 
             # cv2.imshow("1", annotated_frame)

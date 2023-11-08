@@ -81,7 +81,7 @@ def screenshot_window_win32(hwnd, pos, size, pipe_conn1, pipe_conn2):
                     shared_data["data_ready"] = False
             if data is not None:        
                 pipe_conn1.send(data)
-                # pipe_conn2.send(data)
+                pipe_conn2.send(data)
         #         cv2.imshow("1", data)
         #         if cv2.waitKey(1) & 0xFF == ord("q"):
         #             break

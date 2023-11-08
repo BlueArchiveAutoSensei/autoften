@@ -4,6 +4,11 @@ from YOLODetection import detect_yolo
 from config import Config, init
 from processManager import ProcessManager
 from UIPositioning import ui_positioning_pipe
+import time
+import threading
+from OPAgent import click, drag
+from ppadb.client import Client as AdbClient
+from script import script
 
 # class Stu:
 
@@ -35,7 +40,7 @@ class Situation:
                 name, [0, 0, 0, 0], [[0, 0, 0, 0], 0])
             self.namedic[name] = False
         self.exSlot = {}
-        self.exPoint = {}
+        self.exPoint = 0
 
     def updateCharacter(self, result):
         # 识别对象的数字id的集合
@@ -51,12 +56,12 @@ class Situation:
                 self.characters[name].lastSeen[0] = self.characters[name].pos
                 self.characters[name].lastSeen[1] += 1
                 self.characters[name].pos = [0, 0, 0, 0]
-                print("no ", name, ", ")
+                # print("no ", name, ", ")
             else:
                 self.namedic[name] = False
-                print(name, "at ", self.characters[name].pos, ", ")
+                # print(name, "at ", self.characters[name].pos, ", ")
 
-        print("---------")
+        # print("---------")
 
     def updateEX(self, result):
         self.exSlot = result[0]
@@ -67,13 +72,16 @@ tempSitu = Situation(
     ['ui', 'maidAlice', 'akane', 'newYearKayoko', 'yoruNoNero'])
 
 
-def update_for_situ(pipe_conn_1,pipe_conn_2):
+def update_for_situ(pipe_conn_1, pipe_conn_2, pipe_conn_out):
     while True:
         results = pipe_conn_1.recv()
         tempSitu.updateCharacter(results)
-        ex_slot = pipe_conn_2.recv()
-        tempSitu.updateEX(ex_slot)
+        ex = pipe_conn_2.recv()
+        tempSitu.updateEX(ex)
+        # print("update", tempSitu.exPoint)
+
         # ex = ex_positioning()
+        pipe_conn_out.send(tempSitu)
 
 
 # 将截图用cv窗口显示出来
@@ -118,6 +126,7 @@ if __name__ == "__main__":
     pm.appendPipe("pipe1to4")
     pm.appendPipe("pipe4toact")
     pm.appendPipe("pipe_act")
+    pm.appendPipe("pipe_script")
 
     # 创建并启动两个子进程
     pm.appendProcess(screenshot_window_win32,
@@ -132,15 +141,25 @@ if __name__ == "__main__":
                      (config.model,
                       pm.pipeMap['pipe1to2'][1], pm.pipeMap['pipe_act'][0], pm.pipeMap['pipe2to3'][0]))
     pm.appendProcess(update_for_situ,
-                     (pm.pipeMap['pipe_act'][1], pm.pipeMap['pipe4toact'][1]))
+                     (pm.pipeMap['pipe_act'][1], pm.pipeMap['pipe4toact'][1], pm.pipeMap['pipe_script'][0]))
     pm.appendProcess(show_image_cv2,
                      (pm.pipeMap['pipe2to3'][1], *config.size))
+    pm.appendProcess(script, (pm.pipeMap['pipe_script'][1],))
 
     startSequence = ['show_image_cv2',
                      'screenshot_window_win32',
                      'ui_positioning_pipe',
                      'detect_yolo',
-                     'update_for_situ']
+                     'update_for_situ',
+                     'script'
+                     ]
+    startSequence = [
+                     'screenshot_window_win32',
+                     'ui_positioning_pipe',
+                     'detect_yolo',
+                     'update_for_situ',
+                     'script'
+                     ]
 
     pm.startBySequence(startSequence)
 

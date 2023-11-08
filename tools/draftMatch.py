@@ -28,8 +28,9 @@ def template_matching_within_range(main_image_path, template_image_path, region=
     # center_x -= 50
     # bar_length -= 55
     ratio = center_x/bar_length
-    ratio = (center_x-int(ratio*10)*5-7)/(bar_length-9*5-14)
+    ratio = (center_x-int(ratio*10)*5-7)/(bar_length-9*5-15)
     print(center_x,bar_length)
+    print((center_x-int(ratio*10)*5-7),(bar_length-9*5-15))
     print(ratio)
 
 
@@ -41,10 +42,11 @@ def template_matching_within_range(main_image_path, template_image_path, region=
     cv2.destroyAllWindows()
 
 # 使用方法
-main_image_path = r"C:\Users\Vickko\Pictures\16_49_27.png"
-template_image_path = r"C:\Users\Vickko\Pictures\line.png"
+main_image_path = r"C:\Users\Vickko\Pictures\17_03_12.png"
+template_image_path = r"C:\Users\Vickko\Pictures\launch.png"
 region = (1640, 1250, 2285, 1316)  # 原始视频截图的坐标
 region = (1648, 1345, 2298, 1400)  # 照片app全屏截图
-region = (1640, 1342, 2285, 1385)  # win32带Mumu标题栏
 region = (1640, 1350, 2285, 1400)  # 照片app全屏win32
-template_matching_within_range(main_image_path, template_image_path, region)
+region = (1648, 1345, 2298, 1400)  # win32带Mumu标题栏
+# template_matching_within_range(main_image_path, template_image_path, region)
+template_matching_within_range(main_image_path, template_image_path, (0,0,2571,1545))

@@ -107,8 +107,14 @@ def ex_point_calc(main_img, template_img, region=None, threshold=0.8):
         bar_length = original_main_img.shape[1]  # 使用原始图像宽度
 
     ratio = center_x/bar_length
-    ratio = (center_x-int(ratio*10)*5-7)/(bar_length-9*5-15)
-    if ratio >= 0.996:
+    # ex point bar 每格之间间距的距离（像素值）。
+    # 目前720p为3， 1440p为5
+    barCap = 3
+    # 截取时由于ex point bar两侧多余的像素值而使用的修正值
+    # 目前720P为2，1440p为7
+    reviceValue = 2
+    ratio = (center_x-int(ratio*10)*barCap-reviceValue)/(bar_length-9*barCap-2*reviceValue-1)
+    if ratio >= 0.99:
         ratio = 1.0
     # print(center_x,bar_length)
     # print(ratio)

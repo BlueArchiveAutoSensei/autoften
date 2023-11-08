@@ -8,6 +8,9 @@ from ultralytics import YOLO
 # 预测并打上标记后递交给pipe_conn_out以备后续显示
 # 此外，预测结果会从pipe_conn_act送给后续处理
 # 当前状态下，裸yolo性能大约50fps
+# recv 线程 1440下性能大约15fps（IPC瓶颈）
+# 720下（默认窗口大小）性能大约35-40fps
+# TODO: IPC优化可以暂缓，但仍不能忽略
 def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
     # model = YOLO(
     # r"C:\Users\Vickko\code\batrain\runs\detect\train32\weights\best.pt")
@@ -27,7 +30,10 @@ def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
         # video_path = r"C:\Users\Vickko\Documents\MuMu共享文件夹\VideoRecords\ブルアカ(17).mp4"
         # cap = cv2.VideoCapture(video_path)
         data = None
+        start_time = None
         while True:
+            if start_time == None:
+                start_time = time.time()
             # time.sleep(0.005)
             # print("while")
             # success, data = cap.read()
@@ -46,6 +52,9 @@ def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
                     # cv2.waitKey(0)
                     # cv2.destroyAllWindows()
                 # print("child release lock")
+            # frame_rate = 1/(time.time()-start_time)
+            # start_time = time.time()
+            # print("detect recv speed: ", frame_rate, "fps")
 
     # 创建读取线程
     thread = threading.Thread(target=read_data_thread)

@@ -118,6 +118,7 @@ def script(pipe_conn):
             # 执行滑动操作
             device.shell(f"input swipe {START_X} {START_Y} {END_X} {END_Y}")
             print("[][][][][][][]]][][][][][][][][][]][][][][][]")
+            print("main:", situ.exPoint, "??",situ.characters["yoruNoNero"].pos)
             break        
 
 

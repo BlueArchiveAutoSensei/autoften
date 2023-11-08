@@ -52,6 +52,7 @@ def pos_window_win32(title):
 
 # 截图指定窗口（左上右下坐标）
 # 当前状态下，1440p全屏裸截图性能大约30-45fps
+# 720p大约80-100fps
 # 根据cProfile+snakeviz,
 # windll PrintWindow大约占此函数80%耗时
 # saveBitMap.GetBitmapBits占14%

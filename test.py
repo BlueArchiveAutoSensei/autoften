@@ -6,7 +6,6 @@ from processManager import ProcessManager
 from UIPositioning import ui_positioning_pipe
 import time
 import threading
-from OPAgent import click, drag
 from ppadb.client import Client as AdbClient
 from script import script
 

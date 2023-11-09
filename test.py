@@ -72,15 +72,31 @@ tempSitu = Situation(
 
 
 def update_for_situ(pipe_conn_1, pipe_conn_2, pipe_conn_out):
+
+    data_lock = threading.Lock()
+    def send_data_thread():
+        while True:
+            with data_lock:
+                if tempSitu.exPoint != 0:
+                    pipe_conn_out.send(tempSitu)
+                    # print("update", tempSitu.exPoint)
+            time.sleep(0.05)
+
+
+    # 创建发送线程
+    thread = threading.Thread(target=send_data_thread)
+    thread.start()
+
     while True:
         results = pipe_conn_1.recv()
-        tempSitu.updateCharacter(results)
         ex = pipe_conn_2.recv()
-        tempSitu.updateEX(ex)
-        # print("update", tempSitu.exPoint)
+        with data_lock:
+            tempSitu.updateCharacter(results)
+            tempSitu.updateEX(ex)
+        #print("update", tempSitu.exPoint)
 
         # ex = ex_positioning()
-        pipe_conn_out.send(tempSitu)
+        # pipe_conn_out.send(tempSitu)
 
 
 # 将截图用cv窗口显示出来

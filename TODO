@@ -1,7 +1,0 @@
-1. 运算逻辑和进程间通信逻辑隔离
-2. UI OCR
-3. 显示库更换
-4. script逻辑
-5. situation 移动到config
-6. 继续检查全流程性能问题
-7. 使用 threading.Condition 或者 threading.Event 来代替忙等待

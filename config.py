@@ -19,9 +19,9 @@ class Config:
         self.defaultRes = (2560, 1600)
         self.currentRes = get_screen_resolution()
         self.scale = 1
-        self.yoloModelPath = r"C:\Users\Vickko\code\batrain\runs\detect\train32\weights\best.pt"
-        self.ex_template_path = r"C:\Users\Vickko\Pictures\workspace\720p"
-        self.ex_point_template_path = r"C:\Users\Vickko\Pictures\line720p.png"
+        self.yoloModelPath = r"assets\weights\train32.pt"
+        self.ex_template_path = r"assets\template\exPortrait\720p"
+        self.ex_point_template_path = r"assets\template\UI\line720p.png"
         self.ex_slot_pos = (1660, 1020, 2280, 1250)  # 原始视频截图的坐标
         self.ex_slot_pos = (1640, 1110, 2300, 1340)  # 照片app全屏截图
         self.ex_slot_pos = (1660, 1110, 2310, 1340)  # win32带Mumu标题栏
@@ -44,7 +44,7 @@ class Config:
 
 def init(config: Config) -> None:
     print("capturing window:", config.windowTitle)
-    print("yolo model path", config.yoloModelPath)
+    print("yolo model path:", config.yoloModelPath)
     # TODO: 由于截图已经换用win32API，
     # 目前截图实现里貌似不依赖角点坐标
     # 因此可以删除

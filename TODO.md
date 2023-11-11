@@ -17,3 +17,7 @@
 9. config 文件化
 
 10. 子模块导入整个config/env, 内部对所需信息分级进行处理
+
+11. script, OPA, situationUpdate逻辑合并
+
+12. 素材移动至assets目录

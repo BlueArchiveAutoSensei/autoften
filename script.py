@@ -13,6 +13,14 @@ def judge1(situ):
     )
 
 
+def judge2(situ):
+    return (
+        situ is not None and
+        situ.exPoint > 5 and
+        situ.characters["maidAlice"].pos[0] != 0
+    )
+
+
 def script(pipe_conn):
 
     # ---------------- #
@@ -66,13 +74,27 @@ def script(pipe_conn):
             print(state is not None,
                   state.exPoint > 3,
                   state.characters["yoruNoNero"].pos[0] != 0)
+        while not judge1(state):
+            if judge1(state):
+                opAgent.castEX(state, "akane", "yoruNoNero")
+                print("[][][][][][][]]][][][][][][][][][]][][][][][]")
+                print("JUDGE 1 TRIGGERED")
+                print("EXP:", state.exPoint, )
+                print("target: ",
+                      state.characters["yoruNoNero"].pos)
+                print("[][][][][][][]]][][][][][][][][][]][][][][][]")
+                break
 
-        if judge1(state):
-            opAgent.castEX(state,"akane","yoruNoNero")
-            print("[][][][][][][]]][][][][][][][][][]][][][][][]")
-            print("main:", state.exPoint, "??",
-                  state.characters["yoruNoNero"].pos)
-            break
+        while not judge2(state):
+            if judge2(state):
+                opAgent.castEX(state, "ui", "maidAlice")
+                print("[][][][][][][]]][][][][][][][][][]][][][][][]")
+                print("JUDGE 2 TRIGGERED")
+                print("EXP:", state.exPoint, )
+                print("target: ",
+                      state.characters["maidAlice"].pos)
+                print("[][][][][][][]]][][][][][][][][][]][][][][][]")
+                break
 
 
 if __name__ == "__main__":

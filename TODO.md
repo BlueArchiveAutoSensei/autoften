@@ -20,4 +20,4 @@
 
 11. script, OPA, situationUpdate逻辑合并
 
-12. 素材移动至assets目录
+12. adb binary into vendor path

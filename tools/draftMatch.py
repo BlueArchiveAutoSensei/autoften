@@ -47,7 +47,7 @@ template_image_path = r"c:\Users\Vickko\Pictures\line720p.png"
 region = (1640, 1250, 2285, 1316)  # 原始视频截图的坐标
 region = (1648, 1345, 2298, 1400)  # 照片app全屏截图
 region = (1640, 1350, 2285, 1400)  # 照片app全屏win32
-region = (1648, 1345, 2298, 1400)  # win32带Mumu标题栏
-region = (895, 740, 1248, 770)  # win32带Mumu标题栏720p
+region = (1648, 1345, 2298, 1400)  # win32带MuMu标题栏
+region = (895, 740, 1248, 770)  # win32带MuMu标题栏720p
 # template_matching_within_range(main_image_path, template_image_path, region)
 template_matching_within_range(main_image_path, template_image_path, region)

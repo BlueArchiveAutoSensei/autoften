@@ -145,7 +145,7 @@ if __name__ == "__main__":
     # 提供范围，如果不提供，删除这一行
     pos = (1660, 1020, 2280, 1250)  # 原始视频截图的坐标
     pos = (1640, 1110, 2300, 1340)  # 照片app全屏截图
-    pos = (1660, 1110, 2310, 1340)  # win32带Mumu标题栏
+    pos = (1660, 1110, 2310, 1340)  # win32带MuMu标题栏
     # pos = None
     # 读取主图片
     main_img = cv2.imread(main_image_path, cv2.IMREAD_COLOR)

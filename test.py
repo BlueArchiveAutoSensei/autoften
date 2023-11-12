@@ -131,8 +131,7 @@ if __name__ == "__main__":
     # sys.stderr = open(os.devnull, 'w')
     # sys.stdout = open(os.devnull, 'w')
 
-    config = Config()
-    init(config)
+    config = init()
 
     pm = ProcessManager()
     # 创建管道来传递截图

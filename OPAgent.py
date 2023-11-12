@@ -8,8 +8,8 @@ import subprocess
 
 ex_slot_pos = (1660, 1020, 2280, 1250)  # 原始视频截图的坐标
 ex_slot_pos = (1640, 1110, 2300, 1340)  # 照片app全屏截图
-ex_slot_pos = (1660, 1110, 2310, 1340)  # win32带Mumu标题栏
-ex_slot_pos = (900, 615, 1255, 740)  # win32带Mumu标题栏720p
+ex_slot_pos = (1660, 1110, 2310, 1340)  # win32带MuMu标题栏
+ex_slot_pos = (900, 615, 1255, 740)  # win32带MuMu标题栏720p
 
 
 ex_slot_0 = (int(ex_slot_pos[0]+(ex_slot_pos[2]-ex_slot_pos[0]) * 1/6),

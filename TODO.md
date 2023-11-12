@@ -12,12 +12,10 @@
 
 7. 使用 threading.Condition 或者 threading.Event 来代替忙等待
 
-8. config env 分离
+8. config env 分离, parameters
 
-9. config 文件化
+9. 子模块导入整个config/env, 内部对所需信息分级进行处理
 
-10. 子模块导入整个config/env, 内部对所需信息分级进行处理
+10. script, OPA, situationUpdate逻辑合并
 
-11. script, OPA, situationUpdate逻辑合并
-
-12. adb binary into vendor path
+11. adb binary into vendor path

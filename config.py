@@ -52,7 +52,7 @@ class Config(BaseModel):
             f"  adb_device_port: {self.adb_device_port}\n"
             f"  hwnd: {self.hwnd}\n"
             f"  pos: {self.pos}\n"
-            f"  adb_device_port: {self.size}\n"
+            f"  size: {self.size}\n"
             f")"
         )
 

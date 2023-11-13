@@ -61,7 +61,8 @@ class OPAgent:
         # 此外还有因窗口区域宽于16：9时模拟器画面会有额外灰边需要计算
         # 1440p是 12+54+17 = 83px
         self.headerCorrection = 54
-        self.resRatio = 2
+        # TODO:后续采用实际计算
+        self.resRatio = 1.831
         c, d = self.connect(deviceAddr)
         self.client = c
         self.device = d
@@ -107,10 +108,10 @@ class OPAgent:
         return client, device
 
     def coordCorrection(self, x, y):
-        x -= self.headerCorrection
+        # x -= self.headerCorrection
         y -= self.headerCorrection
-        x *= self.resRatio
-        y *= self.resRatio
+        x = int(x*self.resRatio)
+        y = int(y*self.resRatio)
         return x, y
 
     def click(self, x, y):
@@ -138,5 +139,5 @@ class OPAgent:
 
 if __name__ == "__main__":
     opa = OPAgent()
-    opa.click(1114,329)
+    opa.click(1224,719)
     # opa.drag(959,677,1114,329)

@@ -19,3 +19,5 @@
 10. script, OPA, situationUpdate逻辑合并
 
 11. adb binary into vendor path
+
+12. sched/APScheduler/eventlet/gevent 精确计时控制（限制帧率/耗时监测）

@@ -7,7 +7,7 @@ from UIPositioning import ui_positioning_pipe
 import time
 import threading
 from ppadb.client import Client as AdbClient
-from script import script
+from script import script_exec
 
 # class Stu:
 
@@ -154,11 +154,11 @@ if __name__ == "__main__":
     pm.appendProcess(detect_yolo,
                      (config.model,
                       pm.pipeMap['pipe1to2'][1], pm.pipeMap['pipe_act'][0], pm.pipeMap['pipe2to3'][0]))
-    pm.appendProcess(update_for_situ,
-                     (pm.pipeMap['pipe_act'][1], pm.pipeMap['pipe4toact'][1], pm.pipeMap['pipe_script'][0]))
+    pm.appendProcess(script_exec,
+                     (pm.pipeMap['pipe_act'][1], pm.pipeMap['pipe4toact'][1]))
     pm.appendProcess(show_image_cv2,
                      (pm.pipeMap['pipe2to3'][1], *config.size))
-    pm.appendProcess(script, (pm.pipeMap['pipe_script'][1],))
+    #pm.appendProcess(script, (pm.pipeMap['pipe_script'][1],))
 
     startSequence = ['show_image_cv2',
                      'screenshot_window_win32',
@@ -171,8 +171,7 @@ if __name__ == "__main__":
                      'screenshot_window_win32',
                      'ui_positioning_pipe',
                      'detect_yolo',
-                     'update_for_situ',
-                     'script'
+                     'script_exec',
                      ]
 
     pm.startBySequence(startSequence)

@@ -6,7 +6,7 @@ adb_server_port: 5037
 tempMatch_threshold: 0.6
 ex_point_template_path: assets\template\UI\line720p.png
 ex_template_path: assets\template\exPortrait\720p
-yoloModelPath: assets\weights\train32.pt
+yoloModelPath: assets\weights\train35.pt
 defaultRes: [2560, 1600]
 ex_bar_pos: [895, 740, 1248, 770]
 ex_slot_pos: [900, 615, 1255, 740]

@@ -119,7 +119,7 @@ class OPAgent:
         # 发送鼠标点击消息
         self.device.shell(f"input tap {x} {y}")
 
-    def drag(self, x_start, y_start, x_end, y_end, duration=500):
+    def drag(self, x_start, y_start, x_end, y_end, duration=100):
         x_start, y_start = self.coordCorrection(x_start, y_start)
         x_end, y_end = self.coordCorrection(x_end, y_end)
         self.device.shell(

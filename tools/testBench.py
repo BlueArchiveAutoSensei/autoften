@@ -4,7 +4,7 @@ import time
 
 # Load the YOLOv8 model
 model = YOLO(
-    r"C:\Users\Vickko\code\batrain\runs\detect\train32\weights\best.pt")
+    r"assets\weights\train32.pt")
 
 # Open the video file
 video_path = r"C:\Users\Vickko\Documents\MuMu共享文件夹\VideoRecords\ブルアカ(17).mp4"

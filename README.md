@@ -26,7 +26,7 @@
 #                         ↓                       ↘          #
 #               detect_yolo                 ui_positioning    #
 #               ↓         ↘             ↙                   #
-#  show_image_cv2          update_for_situ                    #
+#  show_image_cv2            script_exec                      #
 ###############################################################
 ```
 

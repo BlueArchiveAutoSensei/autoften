@@ -1,3 +1,7 @@
+
+
+# class Stu:
+
 class Status:
     def __init__(self) -> None:
         self.count_costdown_half = 0

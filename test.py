@@ -1,102 +1,11 @@
 import cv2
 from windowCapture import screenshot_window_win32
 from YOLODetection import detect_yolo
-from config import Config, init
+from config import init
 from processManager import ProcessManager
 from UIPositioning import ui_positioning_pipe
-import time
-import threading
-from ppadb.client import Client as AdbClient
 from script import script_exec
 
-# class Stu:
-
-
-class Status:
-    def __init__(self) -> None:
-        self.count_costdown_half = 0
-
-
-class Character:
-    def __init__(self, name, pos, lastSeen):
-        self.name = name
-        # center (x,y,w,h)
-        self.pos = pos
-        # (pos, n_frame_ago)
-        self.lastSeen = lastSeen
-        self.stat = Status()
-    # def __init__(self, stu, enemy):
-    #     self.stu = stu
-    #     self.enemy = enemy
-
-
-class Situation:
-    def __init__(self, chara_names):
-        self.characters = {}
-        self.namedic = {}
-        for name in chara_names:
-            self.characters[name] = Character(
-                name, [0, 0, 0, 0], [[0, 0, 0, 0], 0])
-            self.namedic[name] = False
-        self.exSlot = {}
-        self.exPoint = 0
-
-    def updateCharacter(self, result):
-        # 识别对象的数字id的集合
-        cls_num = result.boxes.cls.numpy().astype(int)
-        for i in range(len(cls_num)):
-            cls_name = result.names[cls_num[i]]
-            self.characters[cls_name].pos = result.boxes.xywh[i]
-            self.characters[cls_name].lastSeen = [result.boxes.xywh[i], 0]
-            self.namedic[cls_name] = True
-
-        for name in self.namedic:
-            if self.namedic[name] == False:
-                self.characters[name].lastSeen[0] = self.characters[name].pos
-                self.characters[name].lastSeen[1] += 1
-                self.characters[name].pos = [0, 0, 0, 0]
-                # print("no ", name, ", ")
-            else:
-                self.namedic[name] = False
-                # print(name, "at ", self.characters[name].pos, ", ")
-
-        # print("---------")
-
-    def updateEX(self, result):
-        self.exSlot = result[0]
-        self.exPoint = result[1]
-
-
-tempSitu = Situation(
-    ['ui', 'maidAlice', 'akane', 'newYearKayoko', 'yoruNoNero'])
-
-
-def update_for_situ(pipe_conn_1, pipe_conn_2, pipe_conn_out):
-
-    data_lock = threading.Lock()
-    def send_data_thread():
-        while True:
-            with data_lock:
-                if tempSitu.exPoint != 0:
-                    pipe_conn_out.send(tempSitu)
-                    # print("update", tempSitu.exPoint)
-            time.sleep(0.05)
-
-
-    # 创建发送线程
-    thread = threading.Thread(target=send_data_thread)
-    thread.start()
-
-    while True:
-        results = pipe_conn_1.recv()
-        ex = pipe_conn_2.recv()
-        with data_lock:
-            tempSitu.updateCharacter(results)
-            tempSitu.updateEX(ex)
-        #print("update", tempSitu.exPoint)
-
-        # ex = ex_positioning()
-        # pipe_conn_out.send(tempSitu)
 
 
 # 将截图用cv窗口显示出来
@@ -127,7 +36,7 @@ def show_image_cv2(pipe_conn, width, height):
     cv2.destroyAllWindows()
 
 
-if __name__ == "__main__":
+def main():
     # sys.stderr = open(os.devnull, 'w')
     # sys.stdout = open(os.devnull, 'w')
 
@@ -158,14 +67,14 @@ if __name__ == "__main__":
                      (pm.pipeMap['pipe_act'][1], pm.pipeMap['pipe4toact'][1]))
     pm.appendProcess(show_image_cv2,
                      (pm.pipeMap['pipe2to3'][1], *config.size))
-    #pm.appendProcess(script, (pm.pipeMap['pipe_script'][1],))
+
+
 
     startSequence = ['show_image_cv2',
                      'screenshot_window_win32',
                      'ui_positioning_pipe',
                      'detect_yolo',
-                     'update_for_situ',
-                     'script'
+                     'script_exec',
                      ]
     startSequence = [
                      'screenshot_window_win32',
@@ -184,5 +93,8 @@ if __name__ == "__main__":
 #                         ↓                       ↘          #
 #               detect_yolo                 ui_positioning    #
 #               ↓         ↘             ↙                   #
-#  show_image_cv2          update_for_situ                    #
+#  show_image_cv2            script_exec                      #
 ###############################################################
+
+if __name__ == "__main__":
+    main()

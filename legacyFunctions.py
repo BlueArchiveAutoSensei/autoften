@@ -1,6 +1,9 @@
 import pyautogui
 import numpy as np
 import mss
+from state import State
+import threading
+import time
 
 
 # 从窗口名获得左上角坐标和长宽
@@ -36,3 +39,35 @@ def screenshot_window_mss(pos, queue):
         # Convert the screenshot to a NumPy array
         frame_bgr = np.array(screenshot)
         queue.put(frame_bgr)
+
+
+tempSitu = State(
+    ['ui', 'maidAlice', 'akane', 'newYearKayoko', 'yoruNoNero'])
+
+
+def update_for_situ(pipe_conn_1, pipe_conn_2, pipe_conn_out):
+
+    data_lock = threading.Lock()
+    def send_data_thread():
+        while True:
+            with data_lock:
+                if tempSitu.exPoint != 0:
+                    pipe_conn_out.send(tempSitu)
+                    # print("update", tempSitu.exPoint)
+            time.sleep(0.05)
+
+
+    # 创建发送线程
+    thread = threading.Thread(target=send_data_thread)
+    thread.start()
+
+    while True:
+        results = pipe_conn_1.recv()
+        ex = pipe_conn_2.recv()
+        with data_lock:
+            tempSitu.updateCharacter(results)
+            tempSitu.updateEX(ex)
+        #print("update", tempSitu.exPoint)
+
+        # ex = ex_positioning()
+        # pipe_conn_out.send(tempSitu)

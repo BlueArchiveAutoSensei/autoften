@@ -108,7 +108,7 @@ def judge13(state):
 def judge14(state):
     return (
         state is not None and
-        state.exPoint > 6 and
+        state.exPoint > 7 and
         state.characters["maidAlice"].pos[0] != 0
     )
 
@@ -122,7 +122,7 @@ def judge15(state):
 def judge16(state):
     return (
         state is not None and
-        state.exPoint > 2 and
+        state.exPoint > 3 and
         state.characters["yoruNoNero"].pos[0] != 0
     )
 
@@ -184,7 +184,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             print("[][][][][][][]]][][][][][][][][][]][][][][][]")
             break
 
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 1
     # ui 给 maidAlice 上减费
@@ -201,7 +201,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             print("[][][][][][][]]][][][][][][][][][]][][][][][]")
             break
 
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 1
     # newYearKayoko 增伤 maidAlice
@@ -218,7 +218,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             print("[][][][][][][]]][][][][][][][][][]][][][][][]")
             break
 
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 1
     # himari 单拐 maidAlice 攻击
@@ -236,7 +236,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             print("[][][][][][][]]][][][][][][][][][]][][][][][]")
             break
 
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 2
     # akane 挂破甲
@@ -253,7 +253,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             print("[][][][][][][]]][][][][][][][][][]][][][][][]")
             break
 
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 2
     # newYearKayoko 增伤 maidAlice
@@ -270,7 +270,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             print("[][][][][][][]]][][][][][][][][][]][][][][][]")
             break
 
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 2
     # himari 单拐 maidAlice
@@ -287,7 +287,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             print("[][][][][][][]]][][][][][][][][][]][][][][][]")
             break
 
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 2
     # maidAlice攻击
@@ -304,7 +304,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             print("[][][][][][][]]][][][][][][][][][]][][][][][]")
             break
 
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 3
     # akane 挂破甲
@@ -322,7 +322,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             break
 
     
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 3
     # ui 给 maidAlice 上减费
@@ -340,7 +340,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             break
 
     
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 3
     # newYearKayoko 增伤 maidAlice
@@ -357,7 +357,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             print("[][][][][][][]]][][][][][][][][][]][][][][][]")
             break
 
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 3
     # himari 单拐 maidAlice 攻击
@@ -376,7 +376,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             break
 
     
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 4
     # akane挂破甲
@@ -394,7 +394,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             break
 
     
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 4
     # newYearKayoko 增伤 maidAlice
@@ -412,7 +412,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             break
 
     
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 4
     # 双拐 maidAlice
@@ -430,7 +430,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             print("[][][][][][][]]][][][][][][][][][]][][][][][]")
             break
     
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 4
     # maidAlice 攻击
@@ -447,7 +447,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             print("[][][][][][][]]][][][][][][][][][]][][][][][]")
             break
     
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 5
     # 垫三buff
@@ -456,7 +456,9 @@ def script_exec(pipe_conn_1, pipe_conn_2):
         time.sleep(0.001)
         if judge17(state):
             opAgent.castEX(state, "akane", "yoruNoNero")
+            time.sleep(0.05)
             opAgent.castEX(state, "ui", "maidAlice")
+            time.sleep(0.05)
             opAgent.castEX(state, "newYearKayoko", "maidAlice")
             print("[][][][][][][]]][][][][][][][][][]][][][][][]")
             print("JUDGE 17 TRIGGERED")
@@ -466,7 +468,7 @@ def script_exec(pipe_conn_1, pipe_conn_2):
             print("[][][][][][][]]][][][][][][][][][]][][][][][]")
             break
     
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     # boss stage 5
     # 反手拐maidAlice
@@ -475,7 +477,9 @@ def script_exec(pipe_conn_1, pipe_conn_2):
         time.sleep(0.001)
         if judge18(state):
             opAgent.castEX(state, "maidAlice", "yoruNoNero")
+            time.sleep(0.05)
             opAgent.castEX(state, "himari", "maidAlice")
+            time.sleep(0.05)
             opAgent.castEX(state, "ako", "maidAlice")
             print("[][][][][][][]]][][][][][][][][][]][][][][][]")
             print("JUDGE 18 TRIGGERED")

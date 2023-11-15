@@ -71,10 +71,10 @@ def ex_positioning(main_img, templates_dir, region=None, threshold=0.8):
             cv2.rectangle(original_main_img, top_left,
                           bottom_right, (0, 0, 255), 2)
 
-    # print(result)
+    # # print(result)
     # cv2.imshow('Templates Matched', original_main_img)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    # cv2.waitKey(1)
+    # # cv2.destroyAllWindows()
     return result
 
 
@@ -119,19 +119,19 @@ def ex_point_calc(main_img, template_img, region=None, threshold=0.8):
     # print(center_x,bar_length)
     # print(ratio)
 
-    # 在图像上写上ratio的值
-    text = f"Ratio: {ratio*10:.2f}"  # 格式化文本保留两位小数
-    position = (10, 30)  # 文本位置
-    font = cv2.FONT_HERSHEY_SIMPLEX  # 字体
-    font_scale = 1  # 字体缩放
-    color = (0, 255, 0)  # 绿色文本
-    thickness = 2  # 文本线条的粗细
-    cv2.putText(main_img, text, position, font, font_scale, color, thickness)
-    # 打印红色矩形的左上和右下坐标点
-    cv2.rectangle(main_img, top_left, bottom_right, (0,0,255), 2)
-    # 显示匹配结果
-    cv2.imshow('Template Matched', main_img)
-    cv2.waitKey(1)
+    # # 在图像上写上ratio的值
+    # text = f"Ratio: {ratio*10:.2f}"  # 格式化文本保留两位小数
+    # position = (10, 30)  # 文本位置
+    # font = cv2.FONT_HERSHEY_SIMPLEX  # 字体
+    # font_scale = 1  # 字体缩放
+    # color = (0, 255, 0)  # 绿色文本
+    # thickness = 2  # 文本线条的粗细
+    # cv2.putText(main_img, text, position, font, font_scale, color, thickness)
+    # # 打印红色矩形的左上和右下坐标点
+    # cv2.rectangle(main_img, top_left, bottom_right, (0,0,255), 2)
+    # # 显示匹配结果
+    # cv2.imshow('Template Matched', main_img)
+    # cv2.waitKey(1)
 
     return ratio*10
 

@@ -6,20 +6,21 @@ import time as time
 import threading
 import copy
 import cv2
+from typing import Tuple, Optional, Any, Dict
 
 
 # 获取Windows当前屏幕缩放等级
-def get_window_dpi_scale(hwnd):
+def get_window_dpi_scale(hwnd: int) -> float:
     DPI_AWARENESS_CONTEXT_UNAWARE = -1
     ctypes.windll.user32.SetProcessDpiAwarenessContext(
         DPI_AWARENESS_CONTEXT_UNAWARE)
-    dpi = ctypes.windll.user32.GetDpiForWindow(hwnd)
-    scale = dpi / 96.0
+    dpi: int = ctypes.windll.user32.GetDpiForWindow(hwnd)
+    scale: float = dpi / 96.0
     return scale
 
 
 # 返回指定窗口的左上右下坐标(经过缩放修正)
-def pos_window_win32(title):
+def pos_window_win32(title: str) -> Optional[Tuple[int, Tuple[int, int, int, int], Tuple[int, int], float]]:
     hwnd = win32gui.FindWindow(None, title)
     if hwnd:
         # 获取窗口的坐标
@@ -58,12 +59,12 @@ def pos_window_win32(title):
 # saveBitMap.GetBitmapBits占14%
 # saveDC.SelectObject占3%
 # 可继续使用线程分摊函数主线压力以优化性能
-def screenshot_window_win32(hwnd, pos, size, pipe_conn1, pipe_conn2):
+def screenshot_window_win32(hwnd: int, pos: Tuple[int, int, int, int], size: Tuple[int, int], pipe_conn1: Pipe, pipe_conn2: Pipe) -> None:
 
     # ---------------- #
 
     # 初始化共享数据和锁
-    shared_data = {
+    shared_data: Dict[str, Any] = {
         "bgr_arr": None,
         "data_ready": False,
     }

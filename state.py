@@ -32,7 +32,7 @@ class State:
         self.exSlot: Dict[str, Any] = {}
         self.exPoint: int = 0
 
-    def updateCharacter(self, result: Dict):
+    def updateCharacter(self, result: Dict) -> None:
         # 识别对象的数字id的集合
         cls_num: List[int] = result.boxes.cls.numpy().astype(int)
         for i in range(len(cls_num)):
@@ -53,6 +53,6 @@ class State:
 
         # print("---------")
 
-    def updateEX(self, result: Dict):
+    def updateEX(self, result: Dict) -> None:
         self.exSlot = result[0]
         self.exPoint = result[1]

@@ -1,12 +1,13 @@
 import cv2
 import numpy as np
 import os
+from typing import Tuple, Optional
 
 
-def ui_positioning_pipe(pipe_conn_in, pipe_conn_out,
-                        slot_headshot_dir, bar_template_path,
-                        slot_region=None, bar_region=None,
-                        threshold=0.8):
+def ui_positioning_pipe(pipe_conn_in: Pipe, pipe_conn_out: Pipe,
+                        slot_headshot_dir: str, bar_template_path: str,
+                        slot_region: Optional[Tuple[int, int, int, int]]=None, bar_region: Optional[Tuple[int, int, int, int]]=None,
+                        threshold: float=0.8) -> None:
 
     screenshot = None
     bar_template_img = cv2.imread(bar_template_path, cv2.IMREAD_COLOR)
@@ -27,9 +28,9 @@ def ui_positioning_pipe(pipe_conn_in, pipe_conn_out,
 
 # TODO: EX Slot recognition currently iterates over all templates simply;
 # optimization potential exists
-def ex_positioning(main_img, templates_dir, region=None, threshold=0.8):
+def ex_positioning(main_img: MatLike, templates_dir: str, region: Optional[Tuple[int,int,int,int]]=None, threshold: float=0.8) -> dict:
 
-    original_main_img = main_img.copy()
+    original_main_img: MatLike = main_img.copy()
 
     result = {}
 
@@ -78,8 +79,8 @@ def ex_positioning(main_img, templates_dir, region=None, threshold=0.8):
     return result
 
 
-def ex_point_calc(main_img, template_img, region=None, threshold=0.8):
-    original_main_img = main_img.copy()
+def ex_point_calc(main_img: MatLike, template_img: MatLike, region: Optional[Tuple[int,int,int,int]]=None, threshold: float=0.8) ->float:
+    original_main_img: MatLike = main_img.copy()
 
     # 如果用户提供了范围，那么只在该范围内进行模板匹配
     if region:
@@ -87,7 +88,7 @@ def ex_point_calc(main_img, template_img, region=None, threshold=0.8):
         main_img = main_img[y1:y2, x1:x2]
 
     # 使用cv2的模板匹配方法
-    result = cv2.matchTemplate(main_img, template_img, cv2.TM_CCOEFF_NORMED)
+    result: MatLike = cv2.matchTemplate(main_img, template_img, cv2.TM_CCOEFF_NORMED)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
     # 如果最大值小于阈值，我们认为匹配失败
@@ -106,7 +107,7 @@ def ex_point_calc(main_img, template_img, region=None, threshold=0.8):
     else:
         bar_length = original_main_img.shape[1]  # 使用原始图像宽度
 
-    ratio = center_x/bar_length
+    ratio: float = center_x/bar_length
     # ex point bar 每格之间间距的距离（像素值）。
     # 目前720p为3， 1440p为5
     barCap = 3

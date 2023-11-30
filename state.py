@@ -1,14 +1,15 @@
+from typing import List, Tuple, Dict, Any
 
 
 # class Stu:
 
 class Status:
     def __init__(self) -> None:
-        self.count_costdown_half = 0
+        self.count_costdown_half: int = 0
 
 
 class Character:
-    def __init__(self, name, pos, lastSeen):
+    def __init__(self, name: str, pos: List[int], lastSeen: List[List[int], int]) -> None:
         self.name = name
         # center (x,y,w,h)
         self.pos = pos
@@ -21,21 +22,21 @@ class Character:
 
 
 class State:
-    def __init__(self, chara_names):
-        self.characters = {}
-        self.namedic = {}
+    def __init__(self, chara_names:List[str]):
+        self.characters: Dict[str, Character] = {}
+        self.namedic: Dict[str, bool] = {}
         for name in chara_names:
             self.characters[name] = Character(
                 name, [0, 0, 0, 0], [[0, 0, 0, 0], 0])
             self.namedic[name] = False
-        self.exSlot = {}
-        self.exPoint = 0
+        self.exSlot: Dict[str, Any] = {}
+        self.exPoint: int = 0
 
     def updateCharacter(self, result):
         # 识别对象的数字id的集合
-        cls_num = result.boxes.cls.numpy().astype(int)
+        cls_num: List[int] = result.boxes.cls.numpy().astype(int)
         for i in range(len(cls_num)):
-            cls_name = result.names[cls_num[i]]
+            cls_name: str = result.names[cls_num[i]]
             self.characters[cls_name].pos = result.boxes.xywh[i]
             self.characters[cls_name].lastSeen = [result.boxes.xywh[i], 0]
             self.namedic[cls_name] = True
@@ -52,6 +53,6 @@ class State:
 
         # print("---------")
 
-    def updateEX(self, result):
+    def updateEX(self, result:List):
         self.exSlot = result[0]
         self.exPoint = result[1]

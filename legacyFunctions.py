@@ -4,10 +4,11 @@ import mss
 from state import State
 import threading
 import time
+from typing import Optional, Tuple
 
 
 # 从窗口名获得左上角坐标和长宽
-def get_window_position_and_size(title):
+def get_window_position_and_size(title: str) -> Tuple[int,int,int,int] | None:
     try:
         window = pyautogui.getWindowsWithTitle(title)[0]
         return window.left, window.top, window.width, window.height
@@ -17,7 +18,7 @@ def get_window_position_and_size(title):
 
 
 # 截图指定窗口（左上坐标和长宽）
-def screenshot_window(pos, queue):
+def screenshot_window(pos: Tuple[int,int,int,int], queue: Queue) -> None:
     while True:
         if pos:
             left, top, width, height = pos
@@ -31,7 +32,7 @@ def screenshot_window(pos, queue):
 
 
 # 使用mss截图的代码，目前好像输出格式不对，yolo会报错不能用
-def screenshot_window_mss(pos, queue):
+def screenshot_window_mss(pos: Tuple[int,int,int,int], queue: Queue) -> None:
     with mss.mss() as sct:
         left, top, width, height = pos
         monitor = {"top": top, "left": left, "width": width, "height": height}
@@ -45,7 +46,7 @@ tempSitu = State(
     ['ui', 'maidAlice', 'akane', 'newYearKayoko', 'yoruNoNero'])
 
 
-def update_for_situ(pipe_conn_1, pipe_conn_2, pipe_conn_out):
+def update_for_situ(pipe_conn_1: Pipe, pipe_conn_2: Pipe, pipe_conn_out: Pipe) -> None:
 
     data_lock = threading.Lock()
     def send_data_thread():

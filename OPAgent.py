@@ -4,6 +4,7 @@ import win32gui
 import time
 from ppadb.client import Client as AdbClient
 import subprocess
+from typing import Dict, Tuple
 
 
 ex_slot_pos = (1660, 1020, 2280, 1250)  # 原始视频截图的坐标
@@ -20,7 +21,7 @@ ex_slot_2 = (int(ex_slot_pos[0]+(ex_slot_pos[2]-ex_slot_pos[0]) * 5/6),
              int((ex_slot_pos[1]+ex_slot_pos[3])/2))
 
 
-def which_slot(name, exSlots):
+def which_slot(name: str, exSlots: Dict[str, Any]) -> (str | Literal[-1]):
     for slot in exSlots:
         if exSlots[slot] == name:
             return slot
@@ -28,7 +29,7 @@ def which_slot(name, exSlots):
     return -1
 
 
-def slot_pos(slotNum):
+def slot_pos(slotNum: int) -> Tuple[int, int]:
     if slotNum == 0:
         return ex_slot_0
     elif slotNum == 1:
@@ -39,7 +40,7 @@ def slot_pos(slotNum):
     return (0, 0)
 
 
-def chara_center(pos):
+def chara_center(pos: Tuple[int]) -> Tuple[int, int] :
     return (
         int(pos[0]),
         int(pos[1])
@@ -68,7 +69,7 @@ class OPAgent:
         self.device = d
         self.deviceRes = self.getResolution()
 
-    def getResolution(self):
+    def getResolution(self) -> Tuple[int,int]:
         # 获取屏幕分辨率
         resolution_output = self.device.shell("wm size")
         resolution_line = resolution_output.strip().splitlines()[-1]
@@ -89,7 +90,7 @@ class OPAgent:
             # Landscape
             return max(width, height), min(width, height)
 
-    def connect(self, deviceAddr, serverAddr=('localhost', 5037)):
+    def connect(self, deviceAddr: Tuple[str, int], serverAddr=('localhost', 5037)) ->Tuple[Client, client.device]:
         # 通过shell启动ADB server
         subprocess.run(["adb", "start-server"], check=True)
 
@@ -107,30 +108,30 @@ class OPAgent:
 
         return client, device
 
-    def coordCorrection(self, x, y):
+    def coordCorrection(self, x:int, y:int) -> Tuple[int,int]:
         # x -= self.headerCorrection
         y -= self.headerCorrection
         x = int(x*self.resRatio)
         y = int(y*self.resRatio)
         return x, y
 
-    def click(self, x, y):
+    def click(self, x:int, y:int) -> None:
         x, y = self.coordCorrection(x, y)
         # 发送鼠标点击消息
         self.device.shell(f"input tap {x} {y}")
 
-    def drag(self, x_start, y_start, x_end, y_end, duration=100):
+    def drag(self, x_start:int, y_start:int, x_end:int, y_end:int, duration:int=100) -> None:
         x_start, y_start = self.coordCorrection(x_start, y_start)
         x_end, y_end = self.coordCorrection(x_end, y_end)
         self.device.shell(
             f"input swipe {x_start} {y_start} {x_end} {y_end} {duration}")
 
-    def disconnect(self, deviceAddr):
+    def disconnect(self, deviceAddr: Tuple[str, int]) -> None:
         DEVICE_IP, DEVICE_PORT = deviceAddr
         # 断开连接
         self.client.remote_disconnect(DEVICE_IP, DEVICE_PORT)
 
-    def castEX(self, state, character, target):
+    def castEX(self, state: State, character: str, target: str) -> None:
         slotNum = which_slot(character, state.exSlot)
         START_X, START_Y = slot_pos(slotNum)
         END_X, END_Y = chara_center(state.characters[target].pos)

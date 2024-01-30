@@ -11,7 +11,7 @@ from ultralytics import YOLO
 # recv 线程 1440下性能大约15fps（IPC瓶颈）
 # 720下（默认窗口大小）性能大约35-40fps
 # TODO: IPC优化可以暂缓，但仍不能忽略
-def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
+def detect_yolo(model: YOLO, pipe_conn_in: Pipe, pipe_conn_act: Pipe, pipe_conn_out: Pipe) -> None:
     # model = YOLO(
     # r"C:\Users\Vickko\code\batrain\runs\detect\train32\weights\best.pt")
     # sys.stderr = open(os.devnull, 'w')
@@ -26,7 +26,7 @@ def detect_yolo(model, pipe_conn_in, pipe_conn_act, pipe_conn_out):
     }
     data_lock = threading.Lock()
 
-    def read_data_thread():
+    def read_data_thread() -> None:
         # video_path = r"C:\Users\Vickko\Documents\MuMu共享文件夹\VideoRecords\ブルアカ(17).mp4"
         # cap = cv2.VideoCapture(video_path)
         data = None

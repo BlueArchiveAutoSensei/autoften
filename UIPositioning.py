@@ -101,6 +101,9 @@ def ex_positioning_sift(main_img, templates_dict, sift, matcher, region=None):
     # 计算关键点和描述符
     keypoints_main, descriptors_main = sift.detectAndCompute(main_img, None)
 
+    if descriptors_main is None or len(descriptors_main) == 0:
+        return result
+
     for template_name, (keypoints_template, descriptors_template, shape) in templates_dict.items():
         matches = matcher.knnMatch(descriptors_template, descriptors_main, k=2)
 
@@ -138,13 +141,13 @@ def ex_positioning_sift(main_img, templates_dict, sift, matcher, region=None):
                 elif relative_position < 1 / 3:
                     result[0] = template_name
 
-                print(template_name)
-
-                # 绘制矩形
-                main_image = cv2.polylines(main_img, [np.int32(dst)], True, (255, 0, 0), 3, cv2.LINE_AA)
-    cv2.imshow('Detected Subimage', main_img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    #             print(template_name)
+    #
+    #             # 绘制矩形
+    #             main_image = cv2.polylines(main_img, [np.int32(dst)], True, (255, 0, 0), 3, cv2.LINE_AA)
+    # cv2.imshow('Detected Subimage', main_img)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     return result
 
@@ -152,7 +155,6 @@ def ex_positioning_sift(main_img, templates_dict, sift, matcher, region=None):
 # TODO: EX Slot recognition currently iterates over all templates simply;
 # optimization potential exists
 def ex_positioning_template(main_img, templates_dir, region=None, threshold=0.8):
-
     original_main_img = main_img.copy()
 
     result = {}
